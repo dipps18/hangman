@@ -40,6 +40,10 @@ module Display
   def display_repeated
     puts "letter already guessed, please enter another letter".red
   end
+
+  def display_file_not_found
+    puts "Error, file not found".red
+  end
 end
 
 class Game
@@ -67,7 +71,7 @@ class Game
   end
 
   def start_game(player)
-    word = @word.delete(player.guesses.join)
+    word = @word.delete(player.guesses.join) #stores a copy of the words after removing the guessed words 
     display_game_started(@loaded)
     input = ""
     loop do 
@@ -86,8 +90,7 @@ class Game
 
   def init_word
     num = Random.new.rand(61395)
-    file = File.open('5desk.txt','r').readlines.each_with_index{ |line, idx| @word = line if idx == num}
-    @word.delete!("\n")
+    file = File.open('5desk.txt','r').readlines.each_with_index{ |line, idx| @word = line.chop if idx == num}
     p @word
   end
 
@@ -125,26 +128,41 @@ class Game
     end
   end
 
+  def remove_ext(filename)
+    filename = filename[0...filename.index('.')]
+  end
+
   def save_game(player)
     filename = get_file_name
-    filename.concat(".YAML")
+    filename = remove_ext(filename)
+    filename.concat(".yaml")
     file = File.open(filename, 'w')
     file.puts YAML.dump({:word => @word,
       :length => @length,
       :guesses_left => player.guesses_left,
       :result => @result,
       :guesses => player.guesses})
-    puts "File saved"
+    puts "File #{filename} saved"
   end
 
   def load_game()
-    puts "input name of the file"
-    filename = gets.chomp
-    data = YAML.load(File.open(filename).read)
-    player = Player.new(data[:guesses_left], data[:guesses])
-    p data
-    initialize(data[:word], data[:length], data[:result], true)
-    start_game(player)
+    files = Dir.glob("*.yaml").each_with_index{|file, idx| puts "#{idx+1}. #{file}"}
+    choice = ""
+    loop do
+      puts "select choice"
+      choice = gets.chomp
+      break if choice.to_i!=0 || choice.to_i.between?(1, length)
+      display_invalid_input
+    end
+    filename = files[choice.to_i - 1]
+    begin
+      data = YAML.load(File.open(filename).read)
+      player = Player.new(data[:guesses_left], data[:guesses])
+      initialize(data[:word], data[:length], data[:result], true)
+      start_game(player)
+    rescue 
+      display_file_not_found
+    end
   end
 
   def get_file_name
@@ -159,7 +177,6 @@ class Game
   end
 end
 
-
 class Player 
   attr_accessor :guesses_left, :guesses 
 
@@ -168,7 +185,6 @@ class Player
     @guesses = guesses
   end
 end
-
 
 game = Game.new()
 game.play
