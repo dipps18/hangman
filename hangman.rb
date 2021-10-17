@@ -67,7 +67,7 @@ class Game
   end
 
   def start_game(player)
-    word = @word.dup
+    word = @word.delete(player.guesses.join)
     display_game_started(@loaded)
     input = ""
     loop do 
@@ -79,7 +79,6 @@ class Game
       input = get_valid_input("started", player)
       check_input(input, player, word)
       break if player.guesses_left == 0 || input == "save" || word.empty?
-      p word
     end
     display_result(@result)
     input == "save" ? save_game(player) : display_game_result(player)
@@ -135,6 +134,7 @@ class Game
       :guesses_left => player.guesses_left,
       :result => @result,
       :guesses => player.guesses})
+    puts "File saved"
   end
 
   def load_game()
