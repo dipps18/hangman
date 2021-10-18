@@ -71,7 +71,7 @@ class Game
   end
 
   def start_game(player)
-    word = @word.delete(player.guesses.join) #stores a copy of the words after removing the guessed words 
+    word = @word.downcase.delete(player.guesses.join.downcase) #stores a copy of the words after removing the guessed words 
     display_game_started(@loaded)
     input = ""
     loop do 
@@ -91,7 +91,6 @@ class Game
   def init_word
     num = Random.new.rand(61395)
     file = File.open('5desk.txt','r').readlines.each_with_index{ |line, idx| @word = line.chop if idx == num}
-    p @word
   end
 
   def get_valid_input(string, player = nil)
@@ -134,8 +133,8 @@ class Game
 
   def save_game(player)
     filename = get_file_name
-    filename = remove_ext(filename)
-    filename.concat(".yaml")
+    filename = remove_ext(filename) if filename.include?('.')
+    filename.concat(".yaml") 
     file = File.open(filename, 'w')
     file.puts YAML.dump({:word => @word,
       :length => @length,
@@ -179,13 +178,18 @@ end
 
 class Player 
   attr_accessor :guesses_left, :guesses 
-
   def initialize(guesses_left = 10, guesses = Array.new)
     @guesses_left = guesses_left
     @guesses = guesses
   end
 end
 
-game = Game.new()
-game.play
+loop do
+  game = Game.new()
+  game.play
+  puts "Do you wish to play again ? (yes or no)"
+  ans = gets.chomp
+  break if ans == "no"
+end
 
+puts "Thanks for playing"
