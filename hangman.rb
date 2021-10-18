@@ -4,7 +4,7 @@ require 'colorize'
 require 'yaml'
 module Display
   def display_welcome
-    puts "Welcome to Hangman!\n".center(100)1
+    puts "Welcome to Hangman!\n".center(100)
     puts 'Please choose one of the options below (1 or 2)'
     puts "\n1)Start new game".green
     puts '2)Load previous game'.green
